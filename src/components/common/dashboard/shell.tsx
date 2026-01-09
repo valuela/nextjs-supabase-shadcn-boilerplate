@@ -37,6 +37,8 @@ import {
   Menu,
   LogOut,
   Search,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 
 import { ThemeToggle } from "@/components/common/theme-toggle";
@@ -96,6 +98,29 @@ export function DashboardShell({
 
   const activeHref = React.useMemo(() => getActiveHref(pathname), [pathname]);
 
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+
+  // Persist collapse state (optional but nice)
+  React.useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("dashboard:sidebarCollapsed");
+      if (raw === "1") setSidebarCollapsed(true);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  React.useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        "dashboard:sidebarCollapsed",
+        sidebarCollapsed ? "1" : "0"
+      );
+    } catch {
+      // ignore
+    }
+  }, [sidebarCollapsed]);
+
   async function onSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -109,27 +134,59 @@ export function DashboardShell({
     <div className="min-h-screen bg-muted/30">
       {/* Desktop layout: sidebar hard-left, content fills the rest */}
       <div className="flex min-h-screen">
-        {/* Desktop sidebar (hard-left) */}
-        <aside className="hidden lg:flex lg:w-[280px] lg:flex-col lg:border-r lg:bg-background">
-          <div className="px-4 py-4">
-            <BrandBlock />
+        {/* Desktop sidebar (hard-left, collapsible) */}
+        <aside
+          className={`hidden lg:flex lg:flex-col lg:border-r lg:bg-background transition-[width] duration-200 ease-out ${sidebarCollapsed ? "lg:w-[76px]" : "lg:w-[280px]"
+            }`}
+        >
+          <div className="flex items-center justify-between gap-2 px-3 py-3">
+            <BrandBlock collapsed={sidebarCollapsed} />
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden lg:inline-flex"
+              aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              onClick={() => setSidebarCollapsed((v) => !v)}
+            >
+              {sidebarCollapsed ? (
+                <PanelLeftOpen className="h-4 w-4" />
+              ) : (
+                <PanelLeftClose className="h-4 w-4" />
+              )}
+            </Button>
           </div>
+
           <Separator />
 
           <ScrollArea className="flex-1">
-            <div className="p-3">
-              <NavList activeHref={activeHref} onNavigate={() => { }} />
+            <div className="p-2">
+              <NavList
+                activeHref={activeHref}
+                onNavigate={() => { }}
+                collapsed={sidebarCollapsed}
+              />
             </div>
           </ScrollArea>
 
           <Separator />
-          <div className="p-4">
-            <div className="rounded-xl bg-muted p-3">
-              <p className="text-xs font-medium">Boilerplate tip</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Replace nav routes with your app modules.
-              </p>
-            </div>
+          <div className="p-3">
+            {sidebarCollapsed ? (
+              <div
+                className="mx-auto grid h-10 w-10 place-items-center rounded-xl bg-muted text-xs text-muted-foreground"
+                title="Replace nav routes with your app modules"
+                aria-label="Boilerplate tip"
+              >
+                Tip
+              </div>
+            ) : (
+              <div className="rounded-xl bg-muted p-3">
+                <p className="text-xs font-medium">Boilerplate tip</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Replace nav routes with your app modules.
+                </p>
+              </div>
+            )}
           </div>
         </aside>
 
@@ -165,6 +222,21 @@ export function DashboardShell({
                   </SheetContent>
                 </Sheet>
               </div>
+
+              {/* Desktop: optional quick-toggle in topbar too (useful if sidebar is collapsed) */}
+              <Button
+                variant="outline"
+                size="icon"
+                className="hidden lg:inline-flex"
+                aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                onClick={() => setSidebarCollapsed((v) => !v)}
+              >
+                {sidebarCollapsed ? (
+                  <PanelLeftOpen className="h-4 w-4" />
+                ) : (
+                  <PanelLeftClose className="h-4 w-4" />
+                )}
+              </Button>
 
               {/* Brand (mobile only, since desktop brand is in sidebar) */}
               <Link href="/dashboard" className="flex items-center gap-3 lg:hidden">
@@ -249,16 +321,18 @@ export function DashboardShell({
   );
 }
 
-function BrandBlock() {
+function BrandBlock({ collapsed }: { collapsed?: boolean }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className={`flex items-center gap-3 ${collapsed ? "w-full" : ""}`}>
       <div className="h-10 w-10 rounded-2xl bg-primary" aria-hidden="true" />
-      <div className="leading-tight">
-        <p className="text-sm font-semibold">SaaS Admin</p>
-        <p className="text-xs text-muted-foreground">
-          Next.js + Supabase + Shadcn
-        </p>
-      </div>
+      {!collapsed && (
+        <div className="leading-tight">
+          <p className="text-sm font-semibold">SaaS Admin</p>
+          <p className="text-xs text-muted-foreground">
+            Next.js + Supabase + Shadcn
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -266,42 +340,78 @@ function BrandBlock() {
 function NavList({
   activeHref,
   onNavigate,
+  collapsed,
 }: {
   activeHref: string;
   onNavigate: () => void;
+  collapsed?: boolean;
 }) {
   return (
     <div className="space-y-4">
-      {DASHBOARD_NAV.map((section) => (
+      {DASHBOARD_NAV.map((section, idx) => (
         <div key={section.title}>
-          <div className="px-2 pb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-            {section.title}
-          </div>
-          <nav className="space-y-1">
+          {!collapsed ? (
+            <div className="px-2 pb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              {section.title}
+            </div>
+          ) : idx !== 0 ? (
+            <Separator className="my-3" />
+          ) : null}
+
+          <nav className={`space-y-1 ${collapsed ? "pt-1" : ""}`}>
             {section.items.map((item) => {
               const active = item.href === activeHref;
+              const base =
+                "group w-full rounded-xl transition-colors flex items-center";
+              const sizing = collapsed
+                ? "justify-center px-2"
+                : "justify-start gap-2 px-3";
+
               return (
                 <Button
                   key={item.href}
                   asChild
                   variant={active ? "secondary" : "ghost"}
-                  className={`group w-full justify-start gap-2 rounded-xl px-3 ${active ? "font-medium" : ""
-                    }`}
+                  className={`${base} ${sizing}`}
                   onClick={onNavigate}
                 >
-                  <Link href={item.href}>
-                    <span className="relative flex h-7 w-7 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground group-hover:text-foreground">
+                  <Link
+                    href={item.href}
+                    title={collapsed ? item.label : undefined}
+                    aria-label={collapsed ? item.label : undefined}
+                    className="flex w-full items-center"
+                  >
+                    <span
+                      className={`relative flex h-9 w-9 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground group-hover:text-foreground ${collapsed ? "mx-auto" : ""
+                        }`}
+                    >
                       {iconFor(item.icon)}
                     </span>
-                    <span className="flex-1 truncate">{item.label}</span>
-                    {item.badge && (
-                      <Badge variant="secondary" className="text-[10px]">
-                        {item.badge}
-                      </Badge>
+
+                    {!collapsed && (
+                      <>
+                        <span className="ml-2 flex-1 truncate">
+                          {item.label}
+                        </span>
+
+                        {item.badge && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            {item.badge}
+                          </Badge>
+                        )}
+
+                        {active && (
+                          <span
+                            className="ml-2 h-2 w-2 rounded-full bg-primary"
+                            aria-hidden="true"
+                          />
+                        )}
+                      </>
                     )}
-                    {active && (
+
+                    {collapsed && active && (
                       <span
-                        className="ml-2 h-2 w-2 rounded-full bg-primary"
+                        className="absolute right-1 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-primary"
                         aria-hidden="true"
                       />
                     )}
