@@ -141,20 +141,6 @@ export function DashboardShell({
         >
           <div className="flex items-center justify-between gap-2 px-3 py-3">
             <BrandBlock collapsed={sidebarCollapsed} />
-
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hidden lg:inline-flex"
-              aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-              onClick={() => setSidebarCollapsed((v) => !v)}
-            >
-              {sidebarCollapsed ? (
-                <PanelLeftOpen className="h-4 w-4" />
-              ) : (
-                <PanelLeftClose className="h-4 w-4" />
-              )}
-            </Button>
           </div>
 
           <Separator />
@@ -223,7 +209,7 @@ export function DashboardShell({
                 </Sheet>
               </div>
 
-              {/* Desktop: optional quick-toggle in topbar too (useful if sidebar is collapsed) */}
+              {/* Desktop: sidebar collapse toggle */}
               <Button
                 variant="outline"
                 size="icon"
@@ -240,10 +226,7 @@ export function DashboardShell({
 
               {/* Brand (mobile only, since desktop brand is in sidebar) */}
               <Link href="/dashboard" className="flex items-center gap-3 lg:hidden">
-                <div
-                  className="h-9 w-9 rounded-2xl bg-primary"
-                  aria-hidden="true"
-                />
+                <div className="h-9 w-9 rounded-2xl bg-primary" aria-hidden="true" />
                 <div className="leading-tight">
                   <p className="text-sm font-semibold">SaaS Admin</p>
                   <p className="text-xs text-muted-foreground">Boilerplate</p>
@@ -269,9 +252,7 @@ export function DashboardShell({
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="h-9 gap-2">
                       <Avatar className="h-6 w-6">
-                        <AvatarFallback className="text-xs">
-                          {initials}
-                        </AvatarFallback>
+                        <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                       </Avatar>
                       <span className="hidden max-w-[160px] truncate text-xs sm:inline">
                         {userEmail}
@@ -279,18 +260,13 @@ export function DashboardShell({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel className="text-xs">
-                      Account
-                    </DropdownMenuLabel>
+                    <DropdownMenuLabel className="text-xs">Account</DropdownMenuLabel>
                     <div className="px-2 pb-2 text-xs text-muted-foreground">
                       {userEmail}
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link
-                        href="/dashboard/settings"
-                        className="flex items-center gap-2"
-                      >
+                      <Link href="/dashboard/settings" className="flex items-center gap-2">
                         <Settings className="h-4 w-4" />
                         Settings
                       </Link>
@@ -328,9 +304,7 @@ function BrandBlock({ collapsed }: { collapsed?: boolean }) {
       {!collapsed && (
         <div className="leading-tight">
           <p className="text-sm font-semibold">SaaS Admin</p>
-          <p className="text-xs text-muted-foreground">
-            Next.js + Supabase + Shadcn
-          </p>
+          <p className="text-xs text-muted-foreground">Next.js + Supabase + Shadcn</p>
         </div>
       )}
     </div>
@@ -361,11 +335,8 @@ function NavList({
           <nav className={`space-y-1 ${collapsed ? "pt-1" : ""}`}>
             {section.items.map((item) => {
               const active = item.href === activeHref;
-              const base =
-                "group w-full rounded-xl transition-colors flex items-center";
-              const sizing = collapsed
-                ? "justify-center px-2"
-                : "justify-start gap-2 px-3";
+              const base = "group w-full rounded-xl transition-colors flex items-center";
+              const sizing = collapsed ? "justify-center px-2" : "justify-start gap-2 px-3";
 
               return (
                 <Button
@@ -390,9 +361,7 @@ function NavList({
 
                     {!collapsed && (
                       <>
-                        <span className="ml-2 flex-1 truncate">
-                          {item.label}
-                        </span>
+                        <span className="ml-2 flex-1 truncate">{item.label}</span>
 
                         {item.badge && (
                           <Badge variant="secondary" className="text-[10px]">
@@ -401,10 +370,7 @@ function NavList({
                         )}
 
                         {active && (
-                          <span
-                            className="ml-2 h-2 w-2 rounded-full bg-primary"
-                            aria-hidden="true"
-                          />
+                          <span className="ml-2 h-2 w-2 rounded-full bg-primary" aria-hidden="true" />
                         )}
                       </>
                     )}
