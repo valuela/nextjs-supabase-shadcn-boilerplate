@@ -14,15 +14,15 @@ export const DASHBOARD_NAV: NavSection[] = [
   {
     title: "Workspace",
     items: [
-      { href: "/dashboard", label: "Overview", icon: "overview" },
-      { href: "/dashboard/app", label: "App", icon: "app", badge: "New" },
+      { href: "/dashboard", label: "Dashboard", icon: "overview" },
+      { href: "/blankPage", label: "Blank Page", icon: "app", badge: "New" },
     ],
   },
   {
     title: "Admin",
     items: [
-      { href: "/dashboard/admin/users", label: "Users", icon: "users" },
-      { href: "/dashboard/settings", label: "Settings", icon: "settings" },
+      { href: "/admin/users", label: "Users", icon: "users" },
+      { href: "/settings", label: "Settings", icon: "settings" },
     ],
   },
 ];
